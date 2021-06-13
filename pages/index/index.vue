@@ -1,6 +1,7 @@
 <template>
 	<view class="content">
-		<view class="header">
+		<!-- 头部菜单 -->
+		<view class="header" v-if="list.length !== 0">
 			<view class="headerLeft">
 				<text>列表</text>
 				<text>10条</text>
@@ -11,40 +12,52 @@
 				<view class="headerRightList">Finish</view>
 			</view>
 		</view>
-		<view class="list">
+		<!-- 缺省样式 -->
+		<view class="noneItem" v-if="list.length === 0">
+			<image class="noneImage" src="../../static/default.png" mode="aspectFill"></image>
+			<view class="noneText">当前任务列表为空噢！</view>
+		</view>
+		
+		<!-- 任务样式  listItemDone-->
+		<view 
+			class="list" 
+			:class="{'listItemDone':item.status}"
+			v-for="(item,index) in list" :key = "index"
+		>
 			<view class="listItem">
 				<view class="listBox">
-					<view class="checkBox">
+					<view class="checkBox" 	@click="finish(item.id)">
 						
 					</view>
 				</view>
 				<view class="listText">
-					第一件事情吃饭
+					{{item.content}}
 				</view>
 			</view>
 		</view>
-		<view class="list listItemDone">
-			<view class="listItem">
-				<view class="listBox">
-					<view class="checkBox">
-						
-					</view>
-				</view>
-				<view class="listText">
-					第一件事情吃饭
-				</view>
-			</view>
-		</view>
+		
+		<!-- 创建组件 -->
 		<view class="bottom">
-			<view class="createComponent">
+			<!-- 创建按钮 -->
+			<view class="createComponent" @click="createItem" >
 				<text class="iconfont iconjia"></text>
 			</view>
-			<view class="createList">
+			<!-- 创建输入 -->
+			<view class="createList" v-if="activate" :focus="focusInput">
 				<view class="createInput">
-					<input type="text" placeholder="请输入创建内容"/>
+					<input 
+						type="text" placeholder="请输入创建内容"
+						v-model="value" 
+					/>
+					<!-- 双向绑定输入值-->
 				</view>
-				<view class="createButton">创建</view>
+				<view class="createButton" @click="addItem">创建</view>
 			</view>
+		</view>
+		
+		<!-- 透明背景 -->
+		<view class="shdow" v-if="shdow" @click="shdowHide">
+			
 		</view>
 	</view>
 </template>
@@ -53,14 +66,70 @@
 	export default {
 		data() {
 			return {
-
+				list:[
+					// {
+					// 	content:"11111"
+					// },
+					// {
+					// 	content:"22222"
+					// }
+				],
+				value:"",
+				activate:false,
+				shdow:false,
+				focusInput:false
 			}
 		},
 		onLoad() {
 
 		},
 		methods: {
+			/* 打开创建输入 */
+			createItem() {
+				this.activate = !this.activate
+				this.shdow = !this.shdow
+				this.focusInput = true
+				console.log(this.activate)
+			},
+			/* 阴影show */
+			shdowShow() {
+				setTimeout(()=>{
+					this.shdow = true
+				},100) 
+			},
+			/* 阴影hide */
+			shdowHide() {
+				setTimeout(()=> {
+					this.shdow = false
+					this.activate = !this.activate
+				},10)
+			},
+			/* 创建List */
+			addItem() {
+				if (this.value !== "") {
+					this.list.push({
+						/* 以时间戳为ID */
+						id:new Date().getTime(),
+						content:this.value,
+						status:false
+					})
+					this.value = ""
+					this.shdowHide()
+				} 
+				else {
+					/* 弹出提示框 */
+					uni.showToast({
+						title:"请输入内容",
+						icon:'none'
+					})
+				}
 
+			},
+			/* 完成Item */
+			finish(id) {
+				let index = this.list.findIndex((item)=> item.id === id)
+				this.list[index].status = !this.list[index].status
+			}
 		}
 	}
 </script>
@@ -101,10 +170,6 @@
 	justify-content: space-around;
 	overflow: hidden;
 }
-.headerRight .headerRightList {
-
-	
-}
 .activateStatus {
 	color: #007AFF;
 }
@@ -133,7 +198,6 @@
 	background: #FFFFFF;
 	box-shadow: 0 0 5px 1px rgba(0,0,0,.1);
 }
-
 
 .listItemDone .checkBox {
 	position: relative;
@@ -220,5 +284,29 @@
 	box-shadow: 1px 2px 5px 2px rgba(0,0,0,0.1);
 	background-color: #fff;
 	
+}
+
+.noneItem {
+	padding-top: 150px;
+}
+.noneImage {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+.noneText {
+	text-align: center;
+	color: #ccc;
+	font-size: 14px;
+}
+
+/* 阴影部分 */
+.shdow {
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
+	bottom: 0;
+	background: rgba(0,0,0,.5);
 }
 </style>
