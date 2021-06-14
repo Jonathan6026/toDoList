@@ -7,9 +7,21 @@
 				<text>10条</text>
 			</view>
 			<view class="headerRight">
-				<view class="headerRightList activateStatus">All</view>
-				<view class="headerRightList">ToDo</view>
-				<view class="headerRightList">Finish</view>
+				<view class="headerRightList" 
+					  :class="{'activateStatus':tabStatus===1}"
+					  @click="switchTab(1)">
+					All
+				</view>
+				<view class="headerRightList" 
+					  :class="{'activateStatus':tabStatus===2}"
+					  @click="switchTab(2)">
+					ToDo
+				</view>
+				<view class="headerRightList" 
+					  :class="{'activateStatus':tabStatus===3}"
+					  @click="switchTab(3)">
+					Finish
+				</view>
 			</view>
 		</view>
 		<!-- 缺省样式 -->
@@ -22,7 +34,7 @@
 		<view 
 			class="list" 
 			:class="{'listItemDone':item.status}"
-			v-for="(item,index) in list" :key = "index"
+			v-for="(item,index) in dataList" :key = "index"
 		>
 			<view class="listItem">
 				<view class="listBox">
@@ -77,11 +89,43 @@
 				value:"",
 				activate:false,
 				shdow:false,
-				focusInput:false
+				focusInput:false,
+				tabStatus:1
 			}
 		},
 		onLoad() {
 
+		},
+		computed: {
+			dataList() {
+				let list = JSON.parse(JSON.stringify(this.list))
+				let newList = []
+				
+				/* All的时候 */
+				if (this.tabStatus === 1) {
+					return list
+				}
+				/* ToDo的时候 */
+				if (this.tabStatus === 2) {
+					list.forEach((item)=> {
+						/* 如果状态是false就返回 */
+						if (!item.status) {
+							newList.push(item)
+						}
+					})
+					return newList
+				}
+				/* Finish的时候 */
+				if (this.tabStatus === 3) {
+					list.forEach((item)=> {
+						/* 如果状态是false就返回 */
+						if (item.status) {
+							newList.push(item)
+						}
+					})
+					return newList
+				}
+			}
 		},
 		methods: {
 			/* 打开创建输入 */
@@ -129,6 +173,9 @@
 			finish(id) {
 				let index = this.list.findIndex((item)=> item.id === id)
 				this.list[index].status = !this.list[index].status
+			},
+			switchTab(i) {
+				this.tabStatus = i
 			}
 		}
 	}
